@@ -1,0 +1,26 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Web MP3 Player</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div id="player-container">
+      <img id="thumb" />
+      <div id="info">
+        <div id="title">Title</div>
+        <div id="artist">Artist</div>
+      </div>
+      <audio id="player" controls></audio>
+
+      <ul id="playlist"></ul>
+    </div>
+
+    <script src="../dist/web-mp3.js"></script>
+
+    <script type="module">
+      init(["/mp3/deadpan_clean.mp3", "/mp3/echoes_and_static.mp3"]);
+    </script>
+  </body>
+</html>
