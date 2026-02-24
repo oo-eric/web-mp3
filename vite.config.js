@@ -1,7 +1,23 @@
 import { defineConfig } from "vite";
 
+const entry = process.env.LIB_ENTRY || "vanilla";
+
+const libConfig =
+  entry === "react"
+    ? {
+        entry: "src/react.jsx",
+        name: "WebMP3React",
+        formats: ["es"],
+        fileName: "react",
+      }
+    : {
+        entry: "src/index.js",
+        name: "WebMP3",
+        formats: ["es"],
+        fileName: "web-mp3",
+      };
+
 export default defineConfig({
-  // root: 'example',
   server: {
     proxy: {
       "/mp3": {
@@ -12,12 +28,11 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    emptyOutDir: true,
-    lib: {
-      entry: "src/index.js",
-      name: "WebMP3",
-      format: "es",
-      fileName: "web-mp3",
+    emptyOutDir: entry !== "react",
+    lib: libConfig,
+    rollupOptions: {
+      external:
+        entry === "react" ? ["react", "react-dom", "react/jsx-runtime"] : [],
     },
   },
 });

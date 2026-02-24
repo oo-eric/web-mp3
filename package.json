@@ -14,13 +14,31 @@
   "author": "",
   "type": "module",
   "main": "dist/web-mp3.js",
+  "exports": {
+    ".": "./dist/web-mp3.js",
+    "./react": "./dist/react.js"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && LIB_ENTRY=react vite build",
+    "build:vanilla": "vite build",
+    "build:react": "LIB_ENTRY=react vite build",
     "preview": "vite preview",
     "lint": "eslint src/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write ."
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

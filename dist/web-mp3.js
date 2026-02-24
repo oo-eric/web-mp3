@@ -6,7 +6,9 @@ async function E(g) {
   const t = (s[6] << 21) | (s[7] << 14) | (s[8] << 7) | s[9];
   let e;
   if (l.status === 206) {
-    const o = await fetch(g, { headers: { Range: `bytes=10-${10 + t}` } });
+    const o = await fetch(g, {
+      headers: { Range: `bytes=10-${10 + t}` },
+    });
     e = new Uint8Array(await o.arrayBuffer());
   } else e = new Uint8Array(c, 10, t);
   const i = new TextDecoder("utf-8"),
@@ -54,7 +56,10 @@ async function v(g) {
     g.map(async (t, e) => {
       const i = t;
       return {
-        ...((await E(i)) || { title: t, artist: "Unknown Artist" }),
+        ...((await E(i)) || {
+          title: t,
+          artist: "Unknown Artist",
+        }),
         url: i,
         index: e,
       };
