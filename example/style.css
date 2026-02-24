@@ -16,7 +16,8 @@ html {
   font-family: "mgopenmoderna", sans-serif;
 }
 
-#player-container {
+#player-container,
+.player-container {
   width: 300px;
   /* height: 600px; */
   margin: auto;
@@ -25,7 +26,8 @@ html {
   border-radius: 1rem;
 }
 
-#playlist {
+#playlist,
+.playlist {
   list-style: none;
   padding: 0;
   background-color: lightsalmon;
@@ -34,23 +36,27 @@ html {
   margin: 1rem 0 0 0;
 }
 
-#playlist li {
+#playlist li,
+.playlist li {
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 0.25rem;
   transition: background-color 0.3s;
 }
 
-#playlist li.active {
+#playlist li.active,
+.playlist li.active {
   background-color: azure;
   transition: background-color 0.3s;
 }
 
-#player {
+#player,
+.player {
   border-radius: 0.5rem;
 }
 
-#thumb {
+#thumb,
+.thumb {
   width: 100%;
   height: auto;
   object-fit: cover;

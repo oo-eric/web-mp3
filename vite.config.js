@@ -18,6 +18,9 @@ const libConfig =
       };
 
 export default defineConfig({
+  esbuild: {
+    jsx: "automatic",
+  },
   server: {
     proxy: {
       "/mp3": {

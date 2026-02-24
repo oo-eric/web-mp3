@@ -24,7 +24,7 @@
     "build:vanilla": "vite build",
     "build:react": "LIB_ENTRY=react vite build",
     "preview": "vite preview",
-    "lint": "eslint src/",
+    "lint": "eslint src/ --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write ."
   },
@@ -45,6 +45,8 @@
     "eslint": "^10.0.0",
     "globals": "^17.3.0",
     "prettier": "^3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "vite": "^7.3.1"
   }
 }

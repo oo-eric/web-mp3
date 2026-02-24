@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Web MP3 Player — React</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <script type="module">
+      import React from "react";
+      import { createRoot } from "react-dom/client";
+      import { Player } from "../src/react.jsx";
+
+      const root = createRoot(document.getElementById("root"));
+      root.render(
+        React.createElement(Player, {
+          files: ["/mp3/deadpan_clean.mp3", "/mp3/echoes_and_static.mp3"],
+          className: "player-container",
+          thumbClassName: "thumb",
+          audioClassName: "player",
+          playlistClassName: "playlist",
+          activeClassName: "active",
+        }),
+      );
+    </script>
+  </body>
+</html>
