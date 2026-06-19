@@ -9,6 +9,40 @@ const player = document.getElementById("player");
 // build playlist
 const playlist = document.getElementById("playlist");
 
+// optional play/pause UI — feature-detected, these may not exist
+const playerContainer = document.getElementById("player-container");
+const playToggle = document.getElementById("play-toggle");
+
+// toggle playback; no-op until a track is loaded
+const togglePlayback = () => {
+  if (!player.src) return;
+  player.paused ? player.play() : player.pause();
+};
+
+// click the thumbnail or the dedicated button to toggle playback
+if (thumb) {
+  thumb.style.cursor = "pointer";
+  thumb.addEventListener("click", togglePlayback);
+}
+if (playToggle) playToggle.addEventListener("click", togglePlayback);
+
+// drive the UI off the audio element's real state, so OS media keys and the
+// native controls keep it in sync too
+player.addEventListener("play", () => {
+  if (playerContainer) playerContainer.classList.add("playing");
+  if (playToggle) {
+    playToggle.textContent = "⏸";
+    playToggle.setAttribute("aria-label", "Pause");
+  }
+});
+player.addEventListener("pause", () => {
+  if (playerContainer) playerContainer.classList.remove("playing");
+  if (playToggle) {
+    playToggle.textContent = "▶";
+    playToggle.setAttribute("aria-label", "Play");
+  }
+});
+
 /**
  * Initialize the music player by loading songs and setting up the playlist UI.
  * @param {Array} files - An array of song file names to load into the player.

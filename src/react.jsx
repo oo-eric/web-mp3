@@ -7,11 +7,21 @@ function Player({
   playlistClassName,
   thumbClassName,
   audioClassName,
+  playToggleClassName,
   activeClassName = "active",
+  playingClassName = "playing",
 }) {
   const [songs, setSongs] = useState([]);
   const [currentSong, setCurrentSong] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
+
+  // toggle playback; no-op until a track is loaded
+  const togglePlayback = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio || !audio.src) return;
+    audio.paused ? audio.play() : audio.pause();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,19 +95,40 @@ function Player({
 
   const activeSong = songs[currentSong];
 
+  // drive the UI off the audio element's real state, so OS media keys and the
+  // native controls keep it in sync too
+  const handlePlay = useCallback(() => setIsPlaying(true), []);
+  const handlePause = useCallback(() => setIsPlaying(false), []);
+
+  const rootClassName = [className, isPlaying && playingClassName]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={className}>
+    <div className={rootClassName || undefined}>
       {activeSong?.image && (
         <img
           src={activeSong.image}
           alt="Album art"
           className={thumbClassName}
+          style={{ cursor: "pointer" }}
+          onClick={togglePlayback}
         />
       )}
+      <button
+        type="button"
+        className={playToggleClassName}
+        onClick={togglePlayback}
+        aria-label={isPlaying ? "Pause" : "Play"}
+      >
+        {isPlaying ? "⏸" : "▶"}
+      </button>
       <audio
         ref={audioRef}
         controls
         onEnded={handleEnded}
+        onPlay={handlePlay}
+        onPause={handlePause}
         className={audioClassName}
       />
       <ul className={playlistClassName}>
