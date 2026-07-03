@@ -19,7 +19,7 @@ web-mp3 is a browser-based MP3 player that reads ID3v2 tags via HTTP Range reque
 
 ## Architecture
 
-- `src/index.js` — Main player logic. `init(files)` takes an array of filenames, fetches ID3v2 metadata for each from `/mp3/{filename}`, builds the playlist UI, and wires up audio playback with auto-advance and Media Session support.
+- `src/index.js` — Main player logic. `init(files, opts)` takes an array of filenames, fetches ID3v2 metadata for each from `/mp3/{filename}`, builds the playlist UI, and wires up audio playback with auto-advance and Media Session support. `opts.lyrics` (keyed by file URL) enables the timed-lyrics display in a feature-detected `#lyrics` element: lyrics are blocks (verse/chorus) of `{ t, text }` lines, the block containing the current line is shown, `active`/`sung` classes mark line state. See README for the format.
 - `src/utils.js` — Exports `readID3v2(url)` which uses HTTP Range requests to efficiently parse ID3v2 tag headers and extract text frames (title, artist, album, year, track) and album art (APIC frame) with proper text encoding handling.
 - `example/index.html` — Demo page that imports the player as an ES module. Expects `#player` (audio element), `#playlist` (ul), and `#thumb` (img) DOM elements plus a `style.css` stylesheet. Optionally honors `#player-container` (gets a `.playing` class while audio plays) and `#play-toggle` (a play/pause button); both are feature-detected. Clicking `#thumb` also toggles playback.
 - `example/` — Demo page with `main.js` entry point that imports and calls `init()`.
