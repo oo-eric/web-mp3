@@ -53,6 +53,33 @@ Two extra elements are feature-detected — include them to get a toggle button 
 
 Clicking `#thumb` also toggles playback. Because the UI is driven by the `<audio>` element's `play`/`pause` events, OS media keys and the native controls stay in sync.
 
+#### Optional timed lyrics
+
+Add a `#lyrics` element and pass timed lyrics via the second argument to `init`:
+
+```html
+<div id="lyrics"></div>
+
+<script type="module">
+  init(["/mp3/song1.mp3"], {
+    lyrics: {
+      "/mp3/song1.mp3": [
+        [
+          { t: 12.4, text: "First line of the first verse" },
+          { t: 15.1, text: "Second line of the first verse" },
+        ],
+        [
+          { t: 21.8, text: "First line of the chorus" },
+          { t: 24.5, text: "Second line of the chorus" },
+        ],
+      ],
+    },
+  });
+</script>
+```
+
+Lyrics are keyed by file URL (matching the entry in `files`) and structured as an array of **blocks** — a verse, a chorus — each an array of `{ t, text }` lines, where `t` is the line's start time in seconds. As the track plays, the block containing the current line is rendered into `#lyrics` as one `<p>` per line: the current line gets class `active`, already-sung lines in the block get `sung`. Block size controls how many lines are on screen at once. Before the first line (and for tracks with no lyrics) the element stays empty — hide it with `#lyrics:empty { display: none }`. Seeking re-syncs the display. Everything is unstyled; bring your own CSS.
+
 ### React
 
 ```jsx
@@ -85,6 +112,8 @@ The `Player` component is unstyled by default. All elements accept className pro
 | `playToggleClassName` | Class for the play/pause `<button>`                               |
 | `activeClassName`     | Class for the active `<li>` (default: `"active"`)                 |
 | `playingClassName`    | Class added to the container while playing (default: `"playing"`) |
+| `lyrics`              | Timed lyrics keyed by file URL (same block format as vanilla)     |
+| `lyricsClassName`     | Class for the lyrics container `<div>`                            |
 
 React 18+ is required as a peer dependency.
 

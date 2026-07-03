@@ -1,115 +1,140 @@
-async function B(m) {
-  const g = await fetch(m, { headers: { Range: "bytes=0-9" } }), o = await g.arrayBuffer(), i = new Uint8Array(o, 0, 10);
-  if (String.fromCharCode(i[0], i[1], i[2]) !== "ID3")
+async function x(b) {
+  const E = await fetch(b, { headers: { Range: "bytes=0-9" } }), p = await E.arrayBuffer(), o = new Uint8Array(p, 0, 10);
+  if (String.fromCharCode(o[0], o[1], o[2]) !== "ID3")
     return null;
-  const t = i[6] << 21 | i[7] << 14 | i[8] << 7 | i[9];
-  let e;
-  if (g.status === 206) {
-    const d = await fetch(m, {
-      headers: { Range: `bytes=10-${10 + t}` }
+  const g = o[6] << 21 | o[7] << 14 | o[8] << 7 | o[9];
+  let a;
+  if (E.status === 206) {
+    const l = await fetch(b, {
+      headers: { Range: `bytes=10-${10 + g}` }
     });
-    e = new Uint8Array(await d.arrayBuffer());
+    a = new Uint8Array(await l.arrayBuffer());
   } else
-    e = new Uint8Array(o, 10, t);
-  const r = new TextDecoder("utf-8"), y = {};
-  let a = 0;
-  for (; a < e.length - 10; ) {
-    const d = String.fromCharCode(
-      e[a],
-      e[a + 1],
-      e[a + 2],
-      e[a + 3]
+    a = new Uint8Array(p, 10, g);
+  const u = new TextDecoder("utf-8"), h = {};
+  let i = 0;
+  for (; i < a.length - 10; ) {
+    const l = String.fromCharCode(
+      a[i],
+      a[i + 1],
+      a[i + 2],
+      a[i + 3]
     );
-    if (d === "\0\0\0\0") break;
-    const h = e[a + 4] << 24 | e[a + 5] << 16 | e[a + 6] << 8 | e[a + 7], l = e.slice(a + 10, a + 10 + h), b = {
+    if (l === "\0\0\0\0") break;
+    const m = a[i + 4] << 24 | a[i + 5] << 16 | a[i + 6] << 8 | a[i + 7], t = a.slice(i + 10, i + 10 + m), e = {
       TIT2: "title",
       TPE1: "artist",
       TALB: "album",
       TYER: "year",
       TRCK: "track"
     };
-    if (b[d])
-      y[b[d]] = r.decode(l.slice(1)).replace(/\0/g, "");
-    else if (d === "APIC") {
-      const w = l[0];
-      let n = 1, E = "";
-      for (; l[n] !== 0; )
-        E += String.fromCharCode(l[n++]);
-      if (n++, n++, w === 1 || w === 2) {
-        for (; !(l[n] === 0 && l[n + 1] === 0); ) n++;
+    if (e[l])
+      h[e[l]] = u.decode(t.slice(1)).replace(/\0/g, "");
+    else if (l === "APIC") {
+      const s = t[0];
+      let n = 1, c = "";
+      for (; t[n] !== 0; )
+        c += String.fromCharCode(t[n++]);
+      if (n++, n++, s === 1 || s === 2) {
+        for (; !(t[n] === 0 && t[n + 1] === 0); ) n++;
         n += 2;
       } else {
-        for (; l[n] !== 0; ) n++;
+        for (; t[n] !== 0; ) n++;
         n++;
       }
-      const L = l.slice(n), C = new Blob([L], { type: E || "image/jpeg" });
-      y.image = URL.createObjectURL(C);
+      const L = t.slice(n), y = new Blob([L], { type: c || "image/jpeg" });
+      h.image = URL.createObjectURL(y);
     }
-    a += 10 + h;
+    i += 10 + m;
   }
-  return y;
+  return h;
 }
-const f = document.getElementById("thumb"), s = document.getElementById("player"), u = document.getElementById("playlist"), p = document.getElementById("player-container"), c = document.getElementById("play-toggle"), v = () => {
-  s.src && (s.paused ? s.play() : s.pause());
+const v = document.getElementById("thumb"), r = document.getElementById("player"), C = document.getElementById("playlist"), w = document.getElementById("player-container"), d = document.getElementById("play-toggle"), f = document.getElementById("lyrics"), k = () => {
+  r.src && (r.paused ? r.play() : r.pause());
 };
-f && (f.style.cursor = "pointer", f.addEventListener("click", v));
-c && c.addEventListener("click", v);
-s.addEventListener("play", () => {
-  p && p.classList.add("playing"), c && (c.textContent = "⏸", c.setAttribute("aria-label", "Pause"));
+v && (v.style.cursor = "pointer", v.addEventListener("click", k));
+d && d.addEventListener("click", k);
+r.addEventListener("play", () => {
+  w && w.classList.add("playing"), d && (d.textContent = "⏸", d.setAttribute("aria-label", "Pause"));
 });
-s.addEventListener("pause", () => {
-  p && p.classList.remove("playing"), c && (c.textContent = "▶", c.setAttribute("aria-label", "Play"));
+r.addEventListener("pause", () => {
+  w && w.classList.remove("playing"), d && (d.textContent = "▶", d.setAttribute("aria-label", "Play"));
 });
-async function I(m) {
-  let g = 0;
-  const o = await Promise.all(
-    m.map(async (t, e) => {
-      const r = t;
-      return { ...await B(r) || {
+async function B(b, E = {}) {
+  let p = 0;
+  const o = E.lyrics || {};
+  let g = [], a = [], u = -1;
+  const h = (t) => {
+    g = o[t] || [], a = g.flatMap(
+      (e, s) => e.map((n, c) => ({ ...n, block: s, pos: c }))
+    ), u = -1, f && f.replaceChildren();
+  }, i = () => {
+    if (!f || !a.length) return;
+    const t = r.currentTime;
+    let e = -1;
+    for (let c = 0; c < a.length && a[c].t <= t; c++) e = c;
+    if (e === u) return;
+    if (u = e, e === -1) {
+      f.replaceChildren();
+      return;
+    }
+    const { block: s, pos: n } = a[e];
+    f.replaceChildren(
+      ...g[s].map((c, L) => {
+        const y = document.createElement("p");
+        return y.textContent = c.text, L === n ? y.classList.add("active") : L < n && y.classList.add("sung"), y;
+      })
+    );
+  };
+  f && (r.addEventListener("timeupdate", i), r.addEventListener("seeked", i));
+  const l = await Promise.all(
+    b.map(async (t, e) => {
+      const s = t;
+      return { ...await x(s) || {
         title: t,
         artist: "Unknown Artist"
-      }, url: r, index: e };
+      }, url: s, index: e };
     })
   );
-  console.log("songs", o), o.forEach((t) => {
+  console.log("songs", l), l.forEach((t) => {
     const e = document.createElement("li");
     e.textContent = `${t.title}`, e.addEventListener("click", () => {
-      i(t.index);
-    }), u.appendChild(e);
+      m(t.index);
+    }), C.appendChild(e);
   });
-  const i = (t) => {
-    const e = o[t];
+  const m = (t) => {
+    const e = l[t];
     if (console.log("Playing song", e), !!e) {
-      if (g = t, e.image && (f.src = e.image), s.src = e.url, u.querySelectorAll("li").forEach((r) => r.classList.remove("active")), u.children[t].classList.add("active"), "mediaSession" in navigator) {
-        const r = {
+      if (p = t, e.image && (v.src = e.image), r.src = e.url, h(e.url), C.querySelectorAll("li").forEach((s) => s.classList.remove("active")), C.children[t].classList.add("active"), "mediaSession" in navigator) {
+        const s = {
           title: e.title,
           artist: e.artist,
           album: e.album
         };
-        e.image && (r.artwork = [
+        e.image && (s.artwork = [
           { src: e.image, sizes: "96x96", type: "image/png" },
           { src: e.image, sizes: "128x128", type: "image/png" },
           { src: e.image, sizes: "192x192", type: "image/png" },
           { src: e.image, sizes: "256x256", type: "image/png" }
-        ]), navigator.mediaSession.metadata = new MediaMetadata(r);
+        ]), navigator.mediaSession.metadata = new MediaMetadata(s);
       }
-      s.addEventListener(
+      r.addEventListener(
         "canplay",
         () => {
-          s.play();
+          r.play();
         },
-        !1
+        { once: !0 }
       );
     }
   };
-  i(0), s.addEventListener(
+  m(0), r.addEventListener(
     "ended",
     () => {
-      i((g + 1) % o.length);
+      m((p + 1) % l.length);
     },
     !1
   );
 }
 export {
-  I as init
+  B as init
 };

@@ -13,6 +13,9 @@ const playlist = document.getElementById("playlist");
 const playerContainer = document.getElementById("player-container");
 const playToggle = document.getElementById("play-toggle");
 
+// optional timed-lyrics display — feature-detected
+const lyricsBox = document.getElementById("lyrics");
+
 // toggle playback; no-op until a track is loaded
 const togglePlayback = () => {
   if (!player.src) return;
@@ -46,9 +49,58 @@ player.addEventListener("pause", () => {
 /**
  * Initialize the music player by loading songs and setting up the playlist UI.
  * @param {Array} files - An array of song file names to load into the player.
+ * @param {Object} [opts]
+ * @param {Object} [opts.lyrics] - Timed lyrics keyed by file URL. Each entry is
+ *   an array of blocks (verse/chorus), each block an array of { t, text }
+ *   lines with t = line start in seconds. The block containing the current
+ *   line is rendered into #lyrics, so block size controls how many lines are
+ *   on screen at once. Requires a #lyrics element; ignored without one.
  */
-async function init(files) {
+async function init(files, opts = {}) {
   let currentSong = 0;
+
+  // --- timed lyrics (optional) ---
+  const lyricsMap = opts.lyrics || {};
+  let blocks = []; // current track's lyrics: [[{ t, text }, ...], ...]
+  let lines = []; // flattened with block/pos back-references, in time order
+  let activeLine = -1;
+
+  const loadLyrics = (url) => {
+    blocks = lyricsMap[url] || [];
+    lines = blocks.flatMap((block, b) =>
+      block.map((line, pos) => ({ ...line, block: b, pos })),
+    );
+    activeLine = -1;
+    if (lyricsBox) lyricsBox.replaceChildren();
+  };
+
+  const renderLyrics = () => {
+    if (!lyricsBox || !lines.length) return;
+    const t = player.currentTime;
+    let idx = -1;
+    for (let i = 0; i < lines.length && lines[i].t <= t; i++) idx = i;
+    if (idx === activeLine) return;
+    activeLine = idx;
+    if (idx === -1) {
+      lyricsBox.replaceChildren();
+      return;
+    }
+    const { block, pos } = lines[idx];
+    lyricsBox.replaceChildren(
+      ...blocks[block].map((line, i) => {
+        const p = document.createElement("p");
+        p.textContent = line.text;
+        if (i === pos) p.classList.add("active");
+        else if (i < pos) p.classList.add("sung");
+        return p;
+      }),
+    );
+  };
+
+  if (lyricsBox) {
+    player.addEventListener("timeupdate", renderLyrics);
+    player.addEventListener("seeked", renderLyrics);
+  }
 
   const songs = await Promise.all(
     files.map(async (file, index) => {
@@ -83,6 +135,7 @@ async function init(files) {
     currentSong = index;
     if (song.image) thumb.src = song.image;
     player.src = song.url;
+    loadLyrics(song.url);
 
     playlist
       .querySelectorAll("li")
@@ -111,7 +164,7 @@ async function init(files) {
       () => {
         player.play();
       },
-      false,
+      { once: true },
     );
   };
 

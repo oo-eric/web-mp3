@@ -1,162 +1,183 @@
-import { jsxs as E, jsx as h } from "react/jsx-runtime";
-import { useState as k, useRef as I, useCallback as w, useEffect as T } from "react";
-async function U(d) {
-  const b = await fetch(d, { headers: { Range: "bytes=0-9" } }), C = await b.arrayBuffer(), i = new Uint8Array(C, 0, 10);
-  if (String.fromCharCode(i[0], i[1], i[2]) !== "ID3")
+import { jsxs as M, jsx as f } from "react/jsx-runtime";
+import { useState as U, useRef as K, useCallback as p, useEffect as z } from "react";
+async function O(y) {
+  const C = await fetch(y, { headers: { Range: "bytes=0-9" } }), S = await C.arrayBuffer(), l = new Uint8Array(S, 0, 10);
+  if (String.fromCharCode(l[0], l[1], l[2]) !== "ID3")
     return null;
-  const P = i[6] << 21 | i[7] << 14 | i[8] << 7 | i[9];
-  let s;
-  if (b.status === 206) {
-    const o = await fetch(d, {
-      headers: { Range: `bytes=10-${10 + P}` }
+  const k = l[6] << 21 | l[7] << 14 | l[8] << 7 | l[9];
+  let n;
+  if (C.status === 206) {
+    const u = await fetch(y, {
+      headers: { Range: `bytes=10-${10 + k}` }
     });
-    s = new Uint8Array(await o.arrayBuffer());
+    n = new Uint8Array(await u.arrayBuffer());
   } else
-    s = new Uint8Array(C, 10, P);
-  const S = new TextDecoder("utf-8"), f = {};
-  let e = 0;
-  for (; e < s.length - 10; ) {
-    const o = String.fromCharCode(
-      s[e],
-      s[e + 1],
-      s[e + 2],
-      s[e + 3]
+    n = new Uint8Array(S, 10, k);
+  const P = new TextDecoder("utf-8"), h = {};
+  let s = 0;
+  for (; s < n.length - 10; ) {
+    const u = String.fromCharCode(
+      n[s],
+      n[s + 1],
+      n[s + 2],
+      n[s + 3]
     );
-    if (o === "\0\0\0\0") break;
-    const l = s[e + 4] << 24 | s[e + 5] << 16 | s[e + 6] << 8 | s[e + 7], r = s.slice(e + 10, e + 10 + l), g = {
+    if (u === "\0\0\0\0") break;
+    const r = n[s + 4] << 24 | n[s + 5] << 16 | n[s + 6] << 8 | n[s + 7], c = n.slice(s + 10, s + 10 + r), g = {
       TIT2: "title",
       TPE1: "artist",
       TALB: "album",
       TYER: "year",
       TRCK: "track"
     };
-    if (g[o])
-      f[g[o]] = S.decode(r.slice(1)).replace(/\0/g, "");
-    else if (o === "APIC") {
-      const y = r[0];
-      let a = 1, p = "";
-      for (; r[a] !== 0; )
-        p += String.fromCharCode(r[a++]);
-      if (a++, a++, y === 1 || y === 2) {
-        for (; !(r[a] === 0 && r[a + 1] === 0); ) a++;
+    if (g[u])
+      h[g[u]] = P.decode(c.slice(1)).replace(/\0/g, "");
+    else if (u === "APIC") {
+      const v = c[0];
+      let a = 1, b = "";
+      for (; c[a] !== 0; )
+        b += String.fromCharCode(c[a++]);
+      if (a++, a++, v === 1 || v === 2) {
+        for (; !(c[a] === 0 && c[a + 1] === 0); ) a++;
         a += 2;
       } else {
-        for (; r[a] !== 0; ) a++;
+        for (; c[a] !== 0; ) a++;
         a++;
       }
-      const c = r.slice(a), R = new Blob([c], { type: p || "image/jpeg" });
-      f.image = URL.createObjectURL(R);
+      const m = c.slice(a), T = new Blob([m], { type: b || "image/jpeg" });
+      h.image = URL.createObjectURL(T);
     }
-    e += 10 + l;
+    s += 10 + r;
   }
-  return f;
+  return h;
 }
-function L({
-  files: d,
-  className: b,
-  playlistClassName: C,
-  thumbClassName: i,
-  audioClassName: P,
-  playToggleClassName: s,
-  activeClassName: S = "active",
-  playingClassName: f = "playing"
+function F({
+  files: y,
+  className: C,
+  playlistClassName: S,
+  thumbClassName: l,
+  audioClassName: k,
+  playToggleClassName: n,
+  lyrics: P,
+  lyricsClassName: h,
+  activeClassName: s = "active",
+  playingClassName: u = "playing"
 }) {
-  const [e, o] = k([]), [l, r] = k(0), [g, y] = k(!1), a = I(null), p = w(() => {
-    const n = a.current;
-    !n || !n.src || (n.paused ? n.play() : n.pause());
+  const [r, c] = U([]), [g, v] = U(0), [a, b] = U(!1), [m, T] = U(-1), R = K(null), x = p(() => {
+    const t = R.current;
+    !t || !t.src || (t.paused ? t.play() : t.pause());
   }, []);
-  T(() => {
-    let n = !1;
-    async function t() {
-      const u = await Promise.all(
-        d.map(async (m, B) => ({ ...await U(m) || {
-          title: m,
+  z(() => {
+    let t = !1;
+    async function e() {
+      const o = await Promise.all(
+        y.map(async (i, D) => ({ ...await O(i) || {
+          title: i,
           artist: "Unknown Artist"
-        }, url: m, index: B }))
+        }, url: i, index: D }))
       );
-      n || o(u);
+      t || c(o);
     }
-    return t(), () => {
-      n = !0;
+    return e(), () => {
+      t = !0;
     };
-  }, [d]);
-  const c = w(
-    (n) => {
-      const t = e[n];
-      if (!t) return;
-      r(n);
-      const u = a.current;
-      if (u && (u.src = t.url, u.addEventListener(
+  }, [y]);
+  const w = p(
+    (t) => {
+      const e = r[t];
+      if (!e) return;
+      v(t), T(-1);
+      const o = R.current;
+      if (o && (o.src = e.url, o.addEventListener(
         "canplay",
         () => {
-          u.play();
+          o.play();
         },
         { once: !0 }
       )), "mediaSession" in navigator) {
-        const m = {
-          title: t.title,
-          artist: t.artist,
-          album: t.album
+        const i = {
+          title: e.title,
+          artist: e.artist,
+          album: e.album
         };
-        t.image && (m.artwork = [
-          { src: t.image, sizes: "96x96", type: "image/png" },
-          { src: t.image, sizes: "128x128", type: "image/png" },
-          { src: t.image, sizes: "192x192", type: "image/png" },
-          { src: t.image, sizes: "256x256", type: "image/png" }
-        ]), navigator.mediaSession.metadata = new MediaMetadata(m);
+        e.image && (i.artwork = [
+          { src: e.image, sizes: "96x96", type: "image/png" },
+          { src: e.image, sizes: "128x128", type: "image/png" },
+          { src: e.image, sizes: "192x192", type: "image/png" },
+          { src: e.image, sizes: "256x256", type: "image/png" }
+        ]), navigator.mediaSession.metadata = new MediaMetadata(i);
       }
     },
-    [e]
+    [r]
   );
-  T(() => {
-    e.length > 0 && c(0);
-  }, [e, c]);
-  const R = w(() => {
-    c((l + 1) % e.length);
-  }, [l, e.length, c]), v = e[l], A = w(() => y(!0), []), N = w(() => y(!1), []), z = [b, g && f].filter(Boolean).join(" ");
-  return /* @__PURE__ */ E("div", { className: z || void 0, children: [
-    v?.image && /* @__PURE__ */ h(
+  z(() => {
+    r.length > 0 && w(0);
+  }, [r, w]);
+  const B = p(() => {
+    w((g + 1) % r.length);
+  }, [g, r.length, w]), N = r[g], A = P && N && P[N.url] || [], d = A.flatMap(
+    (t, e) => t.map((o, i) => ({ ...o, block: e, pos: i }))
+  ), L = p(() => {
+    const t = R.current;
+    if (!t || !d.length) return;
+    const e = t.currentTime;
+    let o = -1;
+    for (let i = 0; i < d.length && d[i].t <= e; i++) o = i;
+    T(o);
+  }, [d]), E = p(() => b(!0), []), I = p(() => b(!1), []), j = [C, a && u].filter(Boolean).join(" ");
+  return /* @__PURE__ */ M("div", { className: j || void 0, children: [
+    N?.image && /* @__PURE__ */ f(
       "img",
       {
-        src: v.image,
+        src: N.image,
         alt: "Album art",
-        className: i,
+        className: l,
         style: { cursor: "pointer" },
-        onClick: p
+        onClick: x
       }
     ),
-    /* @__PURE__ */ h(
+    /* @__PURE__ */ f(
       "button",
       {
         type: "button",
-        className: s,
-        onClick: p,
-        "aria-label": g ? "Pause" : "Play",
-        children: g ? "⏸" : "▶"
+        className: n,
+        onClick: x,
+        "aria-label": a ? "Pause" : "Play",
+        children: a ? "⏸" : "▶"
       }
     ),
-    /* @__PURE__ */ h(
+    /* @__PURE__ */ f(
       "audio",
       {
-        ref: a,
+        ref: R,
         controls: !0,
-        onEnded: R,
-        onPlay: A,
-        onPause: N,
-        className: P
+        onEnded: B,
+        onPlay: E,
+        onPause: I,
+        onTimeUpdate: L,
+        onSeeked: L,
+        className: k
       }
     ),
-    /* @__PURE__ */ h("ul", { className: C, children: e.map((n, t) => /* @__PURE__ */ h(
+    m >= 0 && d[m] && /* @__PURE__ */ f("div", { className: h, children: A[d[m].block].map((t, e) => /* @__PURE__ */ f(
+      "p",
+      {
+        className: e === d[m].pos ? "active" : e < d[m].pos ? "sung" : void 0,
+        children: t.text
+      },
+      e
+    )) }),
+    /* @__PURE__ */ f("ul", { className: S, children: r.map((t, e) => /* @__PURE__ */ f(
       "li",
       {
-        className: t === l ? S : void 0,
-        onClick: () => c(t),
-        children: n.title
+        className: e === g ? s : void 0,
+        onClick: () => w(e),
+        children: t.title
       },
-      t
+      e
     )) })
   ] });
 }
 export {
-  L as Player
+  F as Player
 };
